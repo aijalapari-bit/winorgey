@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fourzy GvG Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="splashScreen" class="splash-screen">
+      <div class="splash-card">
+        <div class="splash-logo">Fourzy</div>
+        <p>Win Or Gey</p>
+      </div>
+    </div>
+
+    <header class="topbar glass">
+      <div class="brand">Fourzy • GvG Planner</div>
+      <div class="top-actions">
+        <button id="exportBtn">Export</button>
+        <button id="importBtn">Import</button>
+        <button id="fitBtn">Fit Map</button>
+      </div>
+    </header>
+
+    <main>
+      <aside class="sidebar glass">
+        <section class="panel">
+          <h3>Units & Objects</h3>
+          <div class="tool-grid">
+            <button data-tool="ally" class="tool-btn active">Ally</button>
+            <button data-tool="enemy" class="tool-btn">Enemy</button>
+            <button data-tool="boss" class="tool-btn">Boss</button>
+            <button data-tool="blueTower" class="tool-btn">Blue Tower</button>
+            <button data-tool="redTower" class="tool-btn">Red Tower</button>
+            <button data-tool="blueTree" class="tool-btn">Blue Tree</button>
+            <button data-tool="redTree" class="tool-btn">Red Tree</button>
+            <button data-tool="blueGoose" class="tool-btn">Blue Goose</button>
+            <button data-tool="redGoose" class="tool-btn">Red Goose</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Mode</h3>
+          <div class="tool-grid">
+            <button data-tool="draw" class="tool-btn">Draw</button>
+            <button data-tool="text" class="tool-btn">Add Text</button>
+            <button data-tool="select" class="tool-btn">Select</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Control</h3>
+          <label>Color <input type="color" id="colorPicker" value="#ff3b30" /></label>
+          <label>Object Size <input type="range" id="sizeRange" min="20" max="120" value="44" /></label>
+          <div class="tool-grid">
+            <button id="undoBtn">Undo</button>
+            <button id="redoBtn">Redo</button>
+            <button id="clearDrawBtn">Clear Draw</button>
+            <button id="clearObjectsBtn">Clear Object/Text</button>
+          </div>
+          <label class="upload-map">Map <input type="file" id="mapUploader" accept="image/*" /></label>
+          <small>Zoom: Mouse wheel • Pan map: Hold <b>Space</b> + left drag • Drag icon/text: right drag • Delete: double-left-click</small>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <canvas id="board"></canvas>
+      </section>
+    </main>
+
+    <input type="file" id="importInput" accept="application/json" hidden />
+
+    <script src="app.js"></script>
+  </body>
+</html>
