@@ -34,6 +34,7 @@ const state = {
   isPanning: false,
   isDrawing: false,
   isRightDraggingEntity: false,
+  isResizingEntity: false,
   spacePressed: false,
   points: [],
   objects: [],
@@ -203,6 +204,85 @@ function renderSelection() {
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 2 / state.scale;
   ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+  const handles = getResizeHandles(state.selected);
+  handles.forEach((h) => {
+    ctx.fillStyle = '#72b3ff';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5 / state.scale;
+    ctx.beginPath();
+    ctx.arc(h.x, h.y, 5 / state.scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+function getResizeHandles(entity) {
+  const box = entityBox(entity);
+  if (!box) return [];
+  return [
+    { name: 'nw', x: box.x, y: box.y },
+    { name: 'ne', x: box.x + box.width, y: box.y },
+    { name: 'se', x: box.x + box.width, y: box.y + box.height },
+    { name: 'sw', x: box.x, y: box.y + box.height },
+  ];
+}
+
+function hitResizeHandle(world, entity) {
+  if (!entity || entity.kind === 'stroke') return null;
+  const handles = getResizeHandles(entity);
+  return handles.find((h) => Math.hypot(world.x - h.x, world.y - h.y) <= 10 / state.scale) || null;
+}
+
+function beginResize(handle, entity) {
+  if (!handle || !entity) return;
+  const box = entityBox(entity);
+  if (!box) return;
+  saveHistory();
+  state.isResizingEntity = true;
+
+  const anchorByHandle = {
+    nw: { x: box.x + box.width, y: box.y + box.height },
+    ne: { x: box.x, y: box.y + box.height },
+    se: { x: box.x, y: box.y },
+    sw: { x: box.x + box.width, y: box.y },
+  };
+
+  state.resizeMeta = {
+    handle: handle.name,
+    target: { ...entity },
+    anchor: anchorByHandle[handle.name],
+  };
+}
+
+function applyResize(world) {
+  if (!state.isResizingEntity || !state.resizeMeta) return;
+  const { target, anchor } = state.resizeMeta;
+  const box = {
+    x: Math.min(anchor.x, world.x),
+    y: Math.min(anchor.y, world.y),
+    width: Math.max(12, Math.abs(world.x - anchor.x)),
+    height: Math.max(12, Math.abs(world.y - anchor.y)),
+  };
+
+  if (target.kind === 'object') {
+    const obj = state.objects[target.index];
+    if (!obj) return;
+    obj.x = box.x + box.width / 2;
+    obj.y = box.y + box.height / 2;
+    obj.size = Math.max(16, Math.min(160, Math.max(box.width, box.height)));
+  }
+
+  if (target.kind === 'text') {
+    const text = state.texts[target.index];
+    if (!text) return;
+    const lenFactor = Math.max(1, (text.value || '').length * 0.52);
+    const byWidth = box.width / lenFactor;
+    const byHeight = box.height - 8;
+    text.size = Math.max(18, Math.min(120, Math.max(byWidth, byHeight)));
+    text.x = box.x + 4;
+    text.y = box.y + 4;
+  }
 }
 
 function render() {
@@ -271,6 +351,10 @@ function addText(point) {
   if (!value) return;
   saveHistory();
   state.texts.push({ x: point.x, y: point.y, value, color: state.color, size: Math.max(18, state.objectSize - 8) });
+
+  // one-shot placement: after placing once, user must re-select add text
+  setTool('select');
+  state.selected = { kind: 'text', index: state.texts.length - 1 };
   render();
 }
 
@@ -333,6 +417,12 @@ canvas.addEventListener('mousedown', (event) => {
 
   if (event.button !== 0) return;
 
+  const resizeHandle = hitResizeHandle(world, state.selected);
+  if (resizeHandle) {
+    beginResize(resizeHandle, state.selected);
+    return;
+  }
+
   const hit = hitTest(world);
   state.selected = hit?.kind === 'object' || hit?.kind === 'text' ? hit : null;
 
@@ -382,6 +472,12 @@ canvas.addEventListener('mousemove', (event) => {
     return;
   }
 
+  if (state.isResizingEntity) {
+    applyResize(world);
+    render();
+    return;
+  }
+
   if (state.isDrawing) {
     state.points.push(world);
     render();
@@ -391,6 +487,8 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', () => {
   state.isPanning = false;
   state.isRightDraggingEntity = false;
+  state.isResizingEntity = false;
+  state.resizeMeta = null;
 
   if (state.isDrawing && state.points.length > 1) {
     state.strokes.push({ points: [...state.points], color: state.color, width: Math.max(1, state.drawSize) });
@@ -412,6 +510,8 @@ canvas.addEventListener('mouseleave', () => {
   state.isPanning = false;
   state.isDrawing = false;
   state.isRightDraggingEntity = false;
+  state.isResizingEntity = false;
+  state.resizeMeta = null;
   state.points = [];
 });
 
