@@ -5,6 +5,7 @@ const colorPicker = document.getElementById('colorPicker');
 const sizeRange = document.getElementById('sizeRange');
 const mapUploader = document.getElementById('mapUploader');
 const fitBtn = document.getElementById('fitBtn');
+const drawSizeRange = document.getElementById('drawSizeRange');
 const importInput = document.getElementById('importInput');
 
 const DEFAULT_MAP_SRC = 'gvg.jpg';
@@ -23,7 +24,8 @@ const ICON_FILES = {
 const state = {
   tool: 'ally',
   color: '#ff3b30',
-  drawSize: 44,
+  drawSize: 4,
+  objectSize: 44,
   scale: 1,
   offsetX: 0,
   offsetY: 0,
@@ -232,7 +234,7 @@ function render() {
 
   if (state.isDrawing && state.points.length > 1) {
     ctx.strokeStyle = state.color;
-    ctx.lineWidth = state.drawSize / state.scale;
+    ctx.lineWidth = Math.max(1, state.drawSize) / state.scale;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -256,7 +258,7 @@ function render() {
 
 function addObject(point) {
   saveHistory();
-  state.objects.push({ x: point.x, y: point.y, type: state.tool, size: state.drawSize });
+  state.objects.push({ x: point.x, y: point.y, type: state.tool, size: state.objectSize });
   render();
 }
 
@@ -264,7 +266,7 @@ function addText(point) {
   const value = prompt('Masukkan text:');
   if (!value) return;
   saveHistory();
-  state.texts.push({ x: point.x, y: point.y, value, color: state.color, size: Math.max(18, state.drawSize - 8) });
+  state.texts.push({ x: point.x, y: point.y, value, color: state.color, size: Math.max(18, state.objectSize - 8) });
   render();
 }
 
@@ -387,7 +389,7 @@ canvas.addEventListener('mouseup', () => {
   state.isRightDraggingEntity = false;
 
   if (state.isDrawing && state.points.length > 1) {
-    state.strokes.push({ points: [...state.points], color: state.color, width: state.drawSize });
+    state.strokes.push({ points: [...state.points], color: state.color, width: Math.max(1, state.drawSize) });
   }
 
   state.isDrawing = false;
@@ -429,9 +431,14 @@ colorPicker.addEventListener('input', (event) => {
   state.color = event.target.value;
 });
 
+drawSizeRange.addEventListener('input', (event) => {
+  state.drawSize = Number(event.target.value);
+  render();
+});
+
 sizeRange.addEventListener('input', (event) => {
   const size = Number(event.target.value);
-  state.drawSize = size;
+  state.objectSize = size;
 
   if (state.selected?.kind === 'object') {
     saveHistory();
