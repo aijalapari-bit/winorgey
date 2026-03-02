@@ -259,6 +259,10 @@ function render() {
 function addObject(point) {
   saveHistory();
   state.objects.push({ x: point.x, y: point.y, type: state.tool, size: state.objectSize });
+
+  // one-shot placement: after placing once, user must re-select object tool
+  setTool('select');
+  state.selected = { kind: 'object', index: state.objects.length - 1 };
   render();
 }
 
