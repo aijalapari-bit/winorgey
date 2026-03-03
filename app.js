@@ -1,11 +1,14 @@
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
-const workspace = document.querySelector('.workspace');
+const workspace = document.querySelector('.workspace-frame');
 const colorPicker = document.getElementById('colorPicker');
 const sizeRange = document.getElementById('sizeRange');
 const fitBtn = document.getElementById('fitBtn');
 const drawSizeRange = document.getElementById('drawSizeRange');
 const importInput = document.getElementById('importInput');
+const guideBtn = document.getElementById('guideBtn');
+const guideDialog = document.getElementById('guideDialog');
+const closeGuideBtn = document.getElementById('closeGuideBtn');
 
 const DEFAULT_MAP_SRC = 'gvg.jpg';
 const ICON_FILES = {
@@ -629,6 +632,11 @@ importInput.addEventListener('change', (event) => {
 });
 
 window.addEventListener('resize', resizeCanvas);
+
+
+guideBtn.addEventListener('click', () => guideDialog.showModal());
+closeGuideBtn.addEventListener('click', () => guideDialog.close());
+
 
 function startSplash() {
   const splash = document.getElementById('splashScreen');
