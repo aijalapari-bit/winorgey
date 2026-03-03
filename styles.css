@@ -53,7 +53,18 @@ body {
 
 .brand-main { font-weight: 900; letter-spacing: 1px; font-size: 1.02rem; }
 .brand-sub { color: var(--soft); font-size: 0.82rem; margin-top: 2px; }
-.top-actions { display: flex; gap: 8px; }
+.top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+.session-status {
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(214, 153, 89, 0.45);
+  background: rgba(56, 33, 20, 0.88);
+  color: var(--soft);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 
 main {
   flex: 1;
