@@ -18,10 +18,13 @@
 
     <header class="topbar">
       <div class="brand-wrap">
-        <div class="brand-main">WIN OR GEY</div>
-        <div class="brand-sub">Fourzy GvG Planner</div>
+        <div class="brand-main">FOURZY COMMAND</div>
+        <div class="brand-sub">GvG Tactical War Planner</div>
       </div>
       <div class="top-actions">
+        <button id="hostMapBtn" class="btn-ghost">Host Map</button>
+        <button id="joinMapBtn" class="btn-ghost">Join Map</button>
+        <span id="sessionStatus" class="session-status">Offline</span>
         <button id="guideBtn" class="btn-ghost">Guide</button>
         <button id="exportBtn">Export</button>
         <button id="importBtn">Import</button>
@@ -86,18 +89,19 @@
       <ul>
         <li><b>Pan Map:</b> Tahan <b>Space</b> + drag klik kiri.</li>
         <li><b>Zoom:</b> Scroll mouse wheel.</li>
-        <li><b>Place Object:</b> Klik salah satu object, lalu klik map (one-shot).</li>
+        <li><b>Place Object:</b> Klik object, lalu klik map (one-shot).</li>
         <li><b>Add Text:</b> Klik <b>Add Text</b>, klik map, isi text (one-shot).</li>
         <li><b>Move Object/Text:</b> Klik kiri tahan lalu drag.</li>
         <li><b>Resize:</b> Pilih object/text lalu tarik titik sudut.</li>
         <li><b>Delete:</b> Pilih item lalu tekan <b>Delete</b>, atau double klik kiri item.</li>
-        <li><b>Draw:</b> Pilih Draw lalu klik kiri tahan untuk menggambar.</li>
+        <li><b>Realtime Share:</b> Host Map untuk buat room, Join Map untuk masuk room. Semua edit tersinkron live.</li>
       </ul>
       <button id="closeGuideBtn">Close</button>
     </dialog>
 
     <input type="file" id="importInput" accept="application/json" hidden />
 
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
