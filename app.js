@@ -3,7 +3,6 @@ const ctx = canvas.getContext('2d');
 const workspace = document.querySelector('.workspace');
 const colorPicker = document.getElementById('colorPicker');
 const sizeRange = document.getElementById('sizeRange');
-const mapUploader = document.getElementById('mapUploader');
 const fitBtn = document.getElementById('fitBtn');
 const drawSizeRange = document.getElementById('drawSizeRange');
 const importInput = document.getElementById('importInput');
@@ -33,7 +32,7 @@ const state = {
   maxZoom: 8,
   isPanning: false,
   isDrawing: false,
-  isRightDraggingEntity: false,
+  isLeftDraggingEntity: false,
   isResizingEntity: false,
   spacePressed: false,
   points: [],
@@ -399,22 +398,6 @@ canvas.addEventListener('mousedown', (event) => {
     return;
   }
 
-  if (event.button === 2) {
-    const hit = hitTest(world);
-    if ((hit?.kind === 'object' || hit?.kind === 'text')) {
-      saveHistory();
-      state.selected = hit;
-      state.isRightDraggingEntity = true;
-      if (hit.kind === 'object') {
-        state.dragOffset = { x: world.x - state.objects[hit.index].x, y: world.y - state.objects[hit.index].y };
-      } else {
-        state.dragOffset = { x: world.x - state.texts[hit.index].x, y: world.y - state.texts[hit.index].y };
-      }
-      render();
-    }
-    return;
-  }
-
   if (event.button !== 0) return;
 
   const resizeHandle = hitResizeHandle(world, state.selected);
@@ -424,7 +407,22 @@ canvas.addEventListener('mousedown', (event) => {
   }
 
   const hit = hitTest(world);
-  state.selected = hit?.kind === 'object' || hit?.kind === 'text' ? hit : null;
+
+  // left-hold drag for icon/text
+  if (hit?.kind === 'object' || hit?.kind === 'text') {
+    saveHistory();
+    state.selected = hit;
+    state.isLeftDraggingEntity = true;
+    if (hit.kind === 'object') {
+      state.dragOffset = { x: world.x - state.objects[hit.index].x, y: world.y - state.objects[hit.index].y };
+    } else {
+      state.dragOffset = { x: world.x - state.texts[hit.index].x, y: world.y - state.texts[hit.index].y };
+    }
+    render();
+    return;
+  }
+
+  state.selected = null;
 
   if (state.tool === 'draw') {
     saveHistory();
@@ -459,7 +457,7 @@ canvas.addEventListener('mousemove', (event) => {
 
   const world = getWorldPoint(event);
 
-  if (state.isRightDraggingEntity && state.selected) {
+  if (state.isLeftDraggingEntity && state.selected) {
     if (state.selected.kind === 'object') {
       state.objects[state.selected.index].x = world.x - state.dragOffset.x;
       state.objects[state.selected.index].y = world.y - state.dragOffset.y;
@@ -486,7 +484,7 @@ canvas.addEventListener('mousemove', (event) => {
 
 canvas.addEventListener('mouseup', () => {
   state.isPanning = false;
-  state.isRightDraggingEntity = false;
+  state.isLeftDraggingEntity = false;
   state.isResizingEntity = false;
   state.resizeMeta = null;
 
@@ -509,7 +507,7 @@ canvas.addEventListener('dblclick', (event) => {
 canvas.addEventListener('mouseleave', () => {
   state.isPanning = false;
   state.isDrawing = false;
-  state.isRightDraggingEntity = false;
+  state.isLeftDraggingEntity = false;
   state.isResizingEntity = false;
   state.resizeMeta = null;
   state.points = [];
@@ -523,6 +521,7 @@ document.addEventListener('keydown', (event) => {
 
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') { event.preventDefault(); redo(); }
+  if (event.key === 'Delete' && state.selected) { event.preventDefault(); removeEntity(state.selected); }
 });
 
 document.addEventListener('keyup', (event) => {
@@ -574,13 +573,6 @@ document.getElementById('clearObjectsBtn').addEventListener('click', () => {
   state.texts = [];
   state.selected = null;
   render();
-});
-
-mapUploader.addEventListener('change', (event) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  loadMap(url, true);
 });
 
 fitBtn.addEventListener('click', () => {
