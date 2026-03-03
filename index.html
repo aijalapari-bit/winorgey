@@ -9,14 +9,20 @@
   <body>
     <div id="splashScreen" class="splash-screen">
       <div class="splash-card">
-        <div class="splash-logo">Fourzy</div>
+        <div class="splash-logo">FOURZY</div>
         <p>Win Or Gey</p>
       </div>
     </div>
 
-    <header class="topbar glass">
-      <div class="brand">Fourzy • GvG Planner</div>
+    <div class="bg-noise"></div>
+
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-main">WIN OR GEY</div>
+        <div class="brand-sub">Fourzy GvG Planner</div>
+      </div>
       <div class="top-actions">
+        <button id="guideBtn" class="btn-ghost">Guide</button>
         <button id="exportBtn">Export</button>
         <button id="importBtn">Import</button>
         <button id="fitBtn">Fit Map</button>
@@ -24,7 +30,12 @@
     </header>
 
     <main>
-      <aside class="sidebar glass">
+      <aside class="sidebar">
+        <section class="panel panel-title">
+          <h2>Tactical Tools</h2>
+          <p>Build, mark, and orchestrate your battlefield strategy.</p>
+        </section>
+
         <section class="panel">
           <h3>Units & Objects</h3>
           <div class="tool-grid">
@@ -41,7 +52,7 @@
         </section>
 
         <section class="panel">
-          <h3>Mode</h3>
+          <h3>Modes</h3>
           <div class="tool-grid">
             <button data-tool="draw" class="tool-btn">Draw</button>
             <button data-tool="text" class="tool-btn">Add Text</button>
@@ -50,7 +61,7 @@
         </section>
 
         <section class="panel">
-          <h3>Control</h3>
+          <h3>Editor Controls</h3>
           <label>Color <input type="color" id="colorPicker" value="#ff3b30" /></label>
           <label>Object Size <input type="range" id="sizeRange" min="20" max="90" value="44" /></label>
           <label>Draw Size <input type="range" id="drawSizeRange" min="1" max="18" value="4" /></label>
@@ -60,14 +71,30 @@
             <button id="clearDrawBtn">Clear Draw</button>
             <button id="clearObjectsBtn">Clear Object/Text</button>
           </div>
-          <small>Zoom: Mouse wheel • Pan map: Hold <b>Space</b> + left drag • Drag icon/text: left click hold • Delete: tombol <b>Delete</b> saat selected atau double-left-click • Placement object & Add Text berlaku 1x (klik tool lagi untuk menambah baru) • Resize: pilih object/text lalu tarik titik sudutnya</small>
         </section>
       </aside>
 
-      <section class="workspace">
-        <canvas id="board"></canvas>
+      <section class="workspace-wrap">
+        <div class="workspace-frame">
+          <canvas id="board"></canvas>
+        </div>
       </section>
     </main>
+
+    <dialog id="guideDialog" class="guide-dialog">
+      <h3>Guide</h3>
+      <ul>
+        <li><b>Pan Map:</b> Tahan <b>Space</b> + drag klik kiri.</li>
+        <li><b>Zoom:</b> Scroll mouse wheel.</li>
+        <li><b>Place Object:</b> Klik salah satu object, lalu klik map (one-shot).</li>
+        <li><b>Add Text:</b> Klik <b>Add Text</b>, klik map, isi text (one-shot).</li>
+        <li><b>Move Object/Text:</b> Klik kiri tahan lalu drag.</li>
+        <li><b>Resize:</b> Pilih object/text lalu tarik titik sudut.</li>
+        <li><b>Delete:</b> Pilih item lalu tekan <b>Delete</b>, atau double klik kiri item.</li>
+        <li><b>Draw:</b> Pilih Draw lalu klik kiri tahan untuk menggambar.</li>
+      </ul>
+      <button id="closeGuideBtn">Close</button>
+    </dialog>
 
     <input type="file" id="importInput" accept="application/json" hidden />
 
