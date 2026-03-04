@@ -21,6 +21,21 @@ const ICON_FILES = {
   blueGoose: 'goose_blue.png', redGoose: 'goose_red.png',
 };
 
+
+const PEER_OPTIONS = {
+  host: '0.peerjs.com',
+  port: 443,
+  path: '/',
+  secure: true,
+  pingInterval: 12000,
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+    ],
+  },
+};
+
 const collab = {
   peer: null,
   role: null,
@@ -188,8 +203,8 @@ function applySharedPayload(payload) {
 
 function updateSessionStatus() {
   if (!collab.peer) sessionStatus.textContent = 'Offline';
-  else if (!collab.roomCode) sessionStatus.textContent = 'Ready';
-  else sessionStatus.textContent = `${collab.role === 'host' ? 'Host' : 'Join'} • ${collab.roomCode}`;
+  else if (!collab.roomCode) sessionStatus.textContent = 'Connected';
+  else sessionStatus.textContent = `${collab.role === 'host' ? 'Host Internet' : 'Join Internet'} • ${collab.roomCode}`;
 }
 
 function makeRoomCode() {
@@ -227,7 +242,7 @@ function wireConn(conn) {
 function initPeer(id) {
   return new Promise((resolve, reject) => {
     if (!window.Peer) { reject(new Error('PeerJS unavailable')); return; }
-    const peer = new window.Peer(id || undefined, { debug: 0 });
+    const peer = new window.Peer(id || undefined, PEER_OPTIONS);
     peer.on('open', () => resolve(peer));
     peer.on('error', reject);
   });
@@ -341,6 +356,18 @@ importInput.addEventListener('change', (e) => { const file = e.target.files?.[0]
 guideBtn.addEventListener('click', () => guideDialog.showModal());
 closeGuideBtn.addEventListener('click', () => guideDialog.close());
 
+
+function setRoomCodeToURL(roomCode) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('room', roomCode);
+  window.history.replaceState({}, '', url.toString());
+}
+
+function getRoomCodeFromURL() {
+  const url = new URL(window.location.href);
+  return (url.searchParams.get('room') || '').trim().toUpperCase();
+}
+
 hostMapBtn.addEventListener('click', async () => {
   try {
     const roomCode = makeRoomCode();
@@ -355,8 +382,9 @@ hostMapBtn.addEventListener('click', async () => {
     });
 
     updateSessionStatus();
+    setRoomCodeToURL(roomCode);
     navigator.clipboard?.writeText(roomCode).catch(() => {});
-    alert(`Host aktif: ${roomCode}`);
+    alert(`Host aktif lintas internet: ${roomCode}`);
   } catch {
     alert('Gagal membuat host map. Coba lagi.');
   }
@@ -370,7 +398,7 @@ joinMapBtn.addEventListener('click', async () => {
     if (collab.peer) collab.peer.destroy();
     collab.peer = peer; collab.role = 'join'; collab.roomCode = roomCode; collab.peers.clear();
 
-    const conn = peer.connect(roomCode, { reliable: true });
+    const conn = peer.connect(roomCode, { reliable: true, serialization: 'json' });
     collab.hostConn = conn;
     wireConn(conn);
     conn.on('open', () => updateSessionStatus());
@@ -381,6 +409,14 @@ joinMapBtn.addEventListener('click', async () => {
   }
 });
 
+
+function tryAutoJoinFromURL() {
+  const roomCode = getRoomCodeFromURL();
+  if (!roomCode) return;
+  if (collab.role) return;
+  joinMapBtn.click();
+}
+
 window.addEventListener('resize', resizeCanvas);
 function startSplash() { const splash = document.getElementById('splashScreen'); setTimeout(() => splash.classList.add('hide'), 1400); }
 
@@ -389,4 +425,13 @@ loadIconImages();
 loadMap(DEFAULT_MAP_SRC, true);
 startSplash();
 updateSessionStatus();
+setTimeout(() => {
+  const roomFromUrl = getRoomCodeFromURL();
+  if (roomFromUrl && !collab.role) {
+    const originalPrompt = window.prompt;
+    window.prompt = () => roomFromUrl;
+    joinMapBtn.click();
+    window.prompt = originalPrompt;
+  }
+}, 100);
 render();
